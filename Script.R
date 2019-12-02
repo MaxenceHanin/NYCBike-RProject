@@ -1,20 +1,21 @@
 library(readr)
 library(ggplot2)
 library(data.table)
+library(scales)
 
 #import the 12 dataset corresponding to each month of 2018
-m01 <- read_csv("~/INSA/5e année/NYCBike-RProject/dataset/2018/201801.csv")
-m02 <- read_csv("~/INSA/5e année/NYCBike-RProject/dataset/2018/201802.csv")
-m03 <- read_csv("~/INSA/5e année/NYCBike-RProject/dataset/2018/201803.csv")
-m04 <- read_csv("~/INSA/5e année/NYCBike-RProject/dataset/2018/201804.csv")
-m05 <- read_csv("~/INSA/5e année/NYCBike-RProject/dataset/2018/201805.csv")
-m06 <- read_csv("~/INSA/5e année/NYCBike-RProject/dataset/2018/201806.csv")
-m07 <- read_csv("~/INSA/5e année/NYCBike-RProject/dataset/2018/201807.csv")
-m08 <- read_csv("~/INSA/5e année/NYCBike-RProject/dataset/2018/201808.csv")
-m09 <- read_csv("~/INSA/5e année/NYCBike-RProject/dataset/2018/201809.csv")
-m10 <- read_csv("~/INSA/5e année/NYCBike-RProject/dataset/2018/201810.csv")
-m11 <- read_csv("~/INSA/5e année/NYCBike-RProject/dataset/2018/201811.csv")
-m12 <- read_csv("~/INSA/5e année/NYCBike-RProject/dataset/2018/201812.csv")
+m01 <- read_csv("~/INSA/5e année/NYCBike-RProject-perso/dataset/2018/201801.csv")
+m02 <- read_csv("~/INSA/5e année/NYCBike-RProject-perso/dataset/2018/201802.csv")
+m03 <- read_csv("~/INSA/5e année/NYCBike-RProject-perso/dataset/2018/201803.csv")
+m04 <- read_csv("~/INSA/5e année/NYCBike-RProject-perso/dataset/2018/201804.csv")
+m05 <- read_csv("~/INSA/5e année/NYCBike-RProject-perso/dataset/2018/201805.csv")
+m06 <- read_csv("~/INSA/5e année/NYCBike-RProject-perso/dataset/2018/201806.csv")
+m07 <- read_csv("~/INSA/5e année/NYCBike-RProject-perso/dataset/2018/201807.csv")
+m08 <- read_csv("~/INSA/5e année/NYCBike-RProject-perso/dataset/2018/201808.csv")
+m09 <- read_csv("~/INSA/5e année/NYCBike-RProject-perso/dataset/2018/201809.csv")
+m10 <- read_csv("~/INSA/5e année/NYCBike-RProject-perso/dataset/2018/201810.csv")
+m11 <- read_csv("~/INSA/5e année/NYCBike-RProject-perso/dataset/2018/201811.csv")
+m12 <- read_csv("~/INSA/5e année/NYCBike-RProject-perso/dataset/2018/201812.csv")
 
 #For each month, keep only the number of rented bike per day
 m01$stoptime <- 1
@@ -120,3 +121,36 @@ full_plot <-
       )
   ) + labs(title = "Number of NYC-bikes trip in 2018",
            x = "Month", y = "Number of trip")
+
+#-----------------------------------------------------------------------------
+
+#user age against trip distance
+age <- 2018-m01$`birth year`[which(m01$gender>0 & m01$`birth year`>1940)]
+start_lat <- m01$`start station latitude`[which(m01$gender>0 & m01$`birth year`>1940)]
+start_long <- m01$`start station longitude`[which(m01$gender>0 & m01$`birth year`>1940)]
+stop_lat <- m01$`end station latitude`[which(m01$gender>0 & m01$`birth year`>1940)]
+stop_long <- m01$`end station longitude`[which(m01$gender>0 & m01$`birth year`>1940)]
+time <- m01$tripduration[which(m01$gender>0 & m01$`birth year`>1940)]
+
+deg2rad <- function(deg) return(deg*pi/180)
+manhattan_dist <- function(long1, lat1, long2, lat2) {
+  # Convert degrees to radians
+  long1<-deg2rad (long1)
+  lat1<-deg2rad(lat1)
+  long2<-deg2rad(long2)
+  lat2<-deg2rad(lat2)
+  R <- 6371 # Earth mean radius [km]
+  d <- acos(sin(lat1)*sin(lat2) + cos(lat1)*cos(lat2) * cos(long2-long1)) * R
+  return(d) # Distance in km
+}
+distance <- manhattan_dist(start_long,start_lat,stop_long,stop_lat)
+
+age_dist_temp <- data.table(data.frame(age=age,distance=distance))
+age_dist_data <- age_dist_temp[,.(distance_moyenne=mean(na.omit(distance))),by=age]
+
+#draw the plot
+#plot1 <- ggplot(data1, aes(x=day, y=total))+geom_ribbon(aes(ymin=0, ymax=data1$total), fill="blue", col="blue", alpha=0.5)
+full_plot2 <-
+  ggplot(age_dist_data,
+         aes(x = age, y = distance_moyenne)) +
+  labs(title = "Distance parcourue en fonction de l'age", y = "Distance moyenne parcoure (Km)") + geom_line()
