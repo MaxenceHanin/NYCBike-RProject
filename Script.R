@@ -20,77 +20,26 @@ m11 <- read_csv("~/INSA/5e année/NYCBike-RProject-perso/dataset/2018/201811.csv"
 m12 <- read_csv("~/INSA/5e année/NYCBike-RProject-perso/dataset/2018/201812.csv")
 
 #For each month, keep only the number of rented bike per day
-m01$stoptime <- 1
-m01$starttime <- as.integer(as.character(substr(m01$starttime,9,10)))
-m01$bikeid <- 1
-temp1 <- data.table(data.frame(day=m01$starttime,number=m01$bikeid,month=m01$stoptime))
-data1 <- temp1[,.(total=sum(number)),by=.(day,month)]
-
-m02$stoptime <- 2
-m02$starttime <- 31 + as.integer(as.character(substr(m02$starttime,9,10)))
-m02$bikeid <- 1
-temp2 <- data.table(data.frame(day=m02$starttime,number=m02$bikeid,month=m02$stoptime))
-data2 <- temp2[,.(total=sum(number)),by=.(day,month)]
-
-m03$stoptime <- 3
-m03$starttime <- 60 + as.integer(as.character(substr(m03$starttime,9,10)))
-m03$bikeid <- 1
-temp3 <- data.table(data.frame(day=m03$starttime,number=m03$bikeid,month=m03$stoptime))
-data3 <- temp3[,.(total=sum(number)),by=.(day,month)]
-
-m04$stoptime <- 4
-m04$starttime <- 91 + as.integer(as.character(substr(m04$starttime,9,10)))
-m04$bikeid <- 1
-temp4 <- data.table(data.frame(day=m04$starttime,number=m04$bikeid,month=m04$stoptime))
-data4 <- temp4[,.(total=sum(number)),by=.(day,month)]
-
-m05$stoptime <- 5
-m05$starttime <- 121 + as.integer(as.character(substr(m05$starttime,9,10)))
-m05$bikeid <- 1
-temp5 <- data.table(data.frame(day=m05$starttime,number=m05$bikeid,month=m05$stoptime))
-data5 <- temp5[,.(total=sum(number)),by=.(day,month)]
-
-m06$stoptime <- 6
-m06$starttime <- 152 + as.integer(as.character(substr(m06$starttime,9,10)))
-m06$bikeid <- 1
-temp6 <- data.table(data.frame(day=m06$starttime,number=m06$bikeid,month=m06$stoptime))
-data6 <- temp6[,.(total=sum(number)),by=.(day,month)]
-
-m07$stoptime <- 7
-m07$starttime <- 182 + as.integer(as.character(substr(m07$starttime,9,10)))
-m07$bikeid <- 1
-temp7 <- data.table(data.frame(day=m07$starttime,number=m07$bikeid,month=m07$stoptime))
-data7 <- temp7[,.(total=sum(number)),by=.(day,month)]
-
-m08$stoptime <- 8
-m08$starttime <- 213 + as.integer(as.character(substr(m08$starttime,9,10)))
-m08$bikeid <- 1
-temp8 <- data.table(data.frame(day=m08$starttime,number=m08$bikeid,month=m08$stoptime))
-data8 <- temp8[,.(total=sum(number)),by=.(day,month)]
-
-m09$stoptime <- 9
-m09$starttime <- 244 + as.integer(as.character(substr(m09$starttime,9,10)))
-m09$bikeid <- 1
-temp9 <- data.table(data.frame(day=m09$starttime,number=m09$bikeid,month=m09$stoptime))
-data9 <- temp9[,.(total=sum(number)),by=.(day,month)]
-
-m10$stoptime <- 10
-m10$starttime <- 274 + as.integer(as.character(substr(m10$starttime,9,10)))
-m10$bikeid <- 1
-temp10 <- data.table(data.frame(day=m10$starttime,number=m10$bikeid,month=m10$stoptime))
-data10 <- temp10[,.(total=sum(number)),by=.(day,month)]
-
-m11$stoptime <- 11
-m11$starttime <- 305 + as.integer(as.character(substr(m11$starttime,9,10)))
-m11$bikeid <- 1
-temp11 <- data.table(data.frame(day=m11$starttime,number=m11$bikeid,month=m11$stoptime))
-data11 <- temp11[,.(total=sum(number)),by=.(day,month)]
-
-m12$stoptime <- 12
-m12$starttime <- 335 + as.integer(as.character(substr(m12$starttime,9,10)))
-m12$bikeid <- 1
-temp12 <- data.table(data.frame(day=m12$starttime,number=m12$bikeid,month=m12$stoptime))
-data12 <- temp12[,.(total=sum(number)),by=.(day,month)]
+nbr_trip_month <- function(data_table,d,m) {
+  data_table$stoptime <- m
+  data_table$starttime <- d+ as.integer(as.character(substr(data_table$starttime,9,10)))
+  data_table$bikeid <- 1
+  temp <- data.table(data.frame(day=data_table$starttime,number=data_table$bikeid,month=data_table$stoptime))
+  data <- temp[,.(total=sum(number)),by=.(day,month)]
+  return(data)
+}
+data1 <-nbr_trip_month(m01,0,1)
+data2 <-nbr_trip_month(m02,31,2)
+data3 <-nbr_trip_month(m03,60,3)
+data4 <-nbr_trip_month(m04,91,4)
+data5 <-nbr_trip_month(m05,121,5)
+data6 <-nbr_trip_month(m06,152,6)
+data7 <-nbr_trip_month(m07,182,7)
+data8 <-nbr_trip_month(m08,213,8)
+data9 <-nbr_trip_month(m09,244,9)
+data10 <-nbr_trip_month(m10,274,10)
+data11 <-nbr_trip_month(m11,305,11)
+data12 <-nbr_trip_month(m12,335,12)
 
 #concatenate the 12 tables
 full_data <- rbind(data1,data2,data3,data4, data5, data6, data7, data8, data9, data10, data11, data12)
@@ -126,7 +75,7 @@ full_plot <-
 
 #-----------------------------------------------------------------------------
 
-#user age against trip distance
+#user age against trip distance (jan 2018)
 age <- 2018-m01$`birth year`[which(m01$gender>0 & m01$`birth year`>1940)]
 start_lat <- m01$`start station latitude`[which(m01$gender>0 & m01$`birth year`>1940)]
 start_long <- m01$`start station longitude`[which(m01$gender>0 & m01$`birth year`>1940)]
@@ -182,3 +131,17 @@ colnames(repartition_age)<-labels
 repartition_age_dataframe = as.data.frame(repartition_age) ;  
 
 radarchart(repartition_age_dataframe, axistype = 2, seg = 6, axislabcol = 1, plty=1,title = "Nombre d'utilisation par tranche d'âge (janvier 2018)")
+
+# top 10 velos qui ont parcouru le plus de km (aout 2018)
+start_lat8 <- m08$`start station latitude`[which(m08$gender>0 & m08$`birth year`>1940)]
+start_long8 <- m08$`start station longitude`[which(m08$gender>0 & m08$`birth year`>1940)]
+stop_lat8 <- m08$`end station latitude`[which(m08$gender>0 & m08$`birth year`>1940)]
+stop_long8 <- m08$`end station longitude`[which(m08$gender>0 & m08$`birth year`>1940)]
+distance8 <- manhattan_dist(start_long8,start_lat8,stop_long8,stop_lat8)
+veloid <- m08$bikeid [which(m08$gender>0 & m08$`birth year`>1940)]
+top_10_temp <- data.table(data.frame(velo=veloid,distance=distance8))
+top_10_data <- top_10_temp[,.(distance=sum(na.omit(distance))),by=velo]
+top_10_data <- top_10_data[order(-distance)][1:5]
+top_10_data$velo = factor(top_10_data$velo, order=TRUE, levels=top_10_data$velo);
+full_plot4 <- ggplot(data=top_10_data, aes(x=velo, y=distance)) + geom_histogram(stat='identity')+ labs(title = "Top 5 des vélos ayant parcours la plus grande distance en janvier 2018",
+                                                                                                        x = "Id du vélo", y = "Distance parcourue (Km)")
