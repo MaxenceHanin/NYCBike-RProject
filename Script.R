@@ -2,6 +2,8 @@ library(readr)
 library(ggplot2)
 library(data.table)
 library(scales)
+library(plyr)
+library(fmsb)
 
 #import the 12 dataset corresponding to each month of 2018
 m01 <- read_csv("~/INSA/5e année/NYCBike-RProject-perso/dataset/2018/201801.csv")
@@ -130,7 +132,6 @@ start_lat <- m01$`start station latitude`[which(m01$gender>0 & m01$`birth year`>
 start_long <- m01$`start station longitude`[which(m01$gender>0 & m01$`birth year`>1940)]
 stop_lat <- m01$`end station latitude`[which(m01$gender>0 & m01$`birth year`>1940)]
 stop_long <- m01$`end station longitude`[which(m01$gender>0 & m01$`birth year`>1940)]
-time <- m01$tripduration[which(m01$gender>0 & m01$`birth year`>1940)]
 
 deg2rad <- function(deg) return(deg*pi/180)
 manhattan_dist <- function(long1, lat1, long2, lat2) {
@@ -153,4 +154,31 @@ age_dist_data <- age_dist_temp[,.(distance_moyenne=mean(na.omit(distance))),by=a
 full_plot2 <-
   ggplot(age_dist_data,
          aes(x = age, y = distance_moyenne)) +
-  labs(title = "Distance parcourue en fonction de l'age", y = "Distance moyenne parcoure (Km)") + geom_line()
+  labs(title = "Distance parcourue en fonction de l'age", y = "Distance moyenne parcourue (Km)") + geom_line()
+
+
+#trip time against age
+time <- m01$tripduration[which(m01$gender>0 & m01$`birth year`>1940)]/60
+age_time_temp <- data.table(data.frame(age=age,time=time))
+age_time_data <- age_time_temp[,.(time=mean(na.omit(time))),by=age]
+full_plot3 <-
+  ggplot(age_time_data,
+         aes(x = age, y = time)) +
+  labs(title = "Durée du trajet en fonction de l'age", y = "Temps de parcours (min)") + geom_line()
+
+#Nombre d'utilisation par tranche d'age (janvier 2018)
+age_group <- count(age)
+val_max = 600000
+under_20 = c(val_max,0,sum(age_group$freq[which(age_group$x<20)]))
+between_20_30 = c(val_max,0,sum(age_group$freq[which(age_group$x>20 & age_group$x<30)]))
+between_30_40 = c(val_max,0,sum(age_group$freq[which(age_group$x>30 & age_group$x<40)]))
+between_40_50 = c(val_max,0,sum(age_group$freq[which(age_group$x>40 & age_group$x<50)]))
+between_50_60 = c(val_max,0,sum(age_group$freq[which(age_group$x>50 & age_group$x<60)]))
+over_60 = c(val_max,0,sum(age_group$freq[which(age_group$x>60)]))
+
+repartition_age <- cbind(under_20,between_20_30,between_30_40,between_40_50,between_50_60,over_60)
+labels = c("-20ans","20-30ans","30-40ans","40-50ans","50-60ans","+60ans")
+colnames(repartition_age)<-labels 
+repartition_age_dataframe = as.data.frame(repartition_age) ;  
+
+radarchart(repartition_age_dataframe, axistype = 2, seg = 6, axislabcol = 1, plty=1,title = "Nombre d'utilisation par tranche d'âge (janvier 2018)")
