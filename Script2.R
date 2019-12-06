@@ -67,10 +67,10 @@ data$hour = hour(data$startdate)
 by_day = data[, .(day_count=.N), by= day]
 by_day$day = ordered(by_day$day, levels=c("lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"))
 
-ggplot(by_day, aes(x = day, y = day_count)) + geom_bar(stat="identity")
+ggplot(by_day, aes(x = day, y = day_count)) + geom_bar(stat="identity") + ylab("trip count")
 
 by_hour = data[, .(hour_count=.N), by= hour]
-ggplot(by_hour, aes(x = hour, y = hour_count)) + geom_line()
+ggplot(by_hour, aes(x = hour, y = hour_count)) + geom_line() + ylab("trip count")
 
 # Afflux et variation de la proportion de vélos sur une station
 station = most_freq[order(-start.count)][1]$station.id
@@ -81,7 +81,7 @@ output = data[start.station.id == station]
 output$value = -1
 output$date = output$enddate
 
-trips = rbind(input, output)[order(date)] #[day(date) == 5]
+trips = rbind(input, output)[order(date)]
 trips$cumul = cumsum(trips$value)
 trips$cumul = trips$cumul - min(trips$cumul)
 capacity = max(trips$cumul)
