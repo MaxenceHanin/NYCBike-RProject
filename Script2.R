@@ -56,7 +56,7 @@ most_freq$frequentation = most_freq$start.count + most_freq$end.count
 nymap = get_map(location=c(-74.05, 40.63, -73.9, 40.82), maptype="terrain", zoom = 13)
 ggmap(nymap) +
   geom_point(aes(x = station.longitude, y = station.latitude, cex=frequentation), col = "#a31829", bg = "#fa7080", pch=21, data=most_freq) +
-  xlim(-74.05, -73.9) + ylim(40.63, 40.82)
+  xlim(-74.05, -73.9) + ylim(40.63, 40.82)+ labs(title = "Fréquentation des stations de vélo en Aout 2018")
 
 # Nombre de trajets en fonction de l'heure de la journÃ©e / le jour de la semaine
 data$startdate = parse_date_time(data[,"starttime"][[1]], "%Y-%m-%d %H:%M:%OS")
@@ -67,10 +67,11 @@ data$hour = hour(data$startdate)
 by_day = data[, .(day_count=.N), by= day]
 by_day$day = ordered(by_day$day, levels=c("lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"))
 
-ggplot(by_day, aes(x = day, y = day_count)) + geom_bar(stat="identity") + ylab("trip count")
+ggplot(by_day, aes(x = day, y = day_count)) + geom_bar(stat="identity") + ylab("trip count")+ labs(title = "Nombre de trajet en fonction du jour de la semaine (Aout 2018)")
+
 
 by_hour = data[, .(hour_count=.N), by= hour]
-ggplot(by_hour, aes(x = hour, y = hour_count)) + geom_line() + ylab("trip count")
+ggplot(by_hour, aes(x = hour, y = hour_count)) + geom_line() + ylab("trip count")+ labs(title = "Nombre de trajet dans la journée, en fonction de l'heure (Aout 2018)")
 
 # Afflux et variation de la proportion de vÃ©los sur une station
 station = most_freq[order(-start.count)][1]$station.id
@@ -86,4 +87,5 @@ trips$cumul = cumsum(trips$value)
 trips$cumul = trips$cumul - min(trips$cumul)
 capacity = max(trips$cumul)
 
-ggplot(trips, aes(x = date, y = trips$cumul)) + geom_line()
+ggplot(trips, aes(x = date, y = trips$cumul)) + geom_line()+ labs(title = "Cumul de vélos sur un mois pour la station la plus fréquentée (Aout 2018)")
+

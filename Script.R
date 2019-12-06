@@ -5,7 +5,7 @@ library(scales)
 library(plyr)
 library(fmsb)
 
-#import the 12 dataset corresponding to each month of 2018
+#import the 12 datasets corresponding to each month of 2018
 m01 <-
   read_csv("~/INSA/5e année/NYCBike-RProject-perso/dataset/2018/201801.csv")
 m02 <-
@@ -31,7 +31,7 @@ m11 <-
 m12 <-
   read_csv("~/INSA/5e année/NYCBike-RProject-perso/dataset/2018/201812.csv")
 
-#For each month, keep only the number of rented bike per day
+#data cleaning for the first graphic : number of trips in 2018
 nbr_trip_month <- function(data_table, d, m) {
   data_table$stoptime <- m
   data_table$starttime <-
@@ -123,7 +123,7 @@ stop_lat <-
 stop_long <-
   m01$`end station longitude`[which(m01$gender > 0 &
                                       m01$`birth year` > 1940)]
-
+#function calculating manhattan distance (for distances in Manhattan district, so fuuuunny)
 deg2rad <- function(deg)
   return(deg * pi / 180)
 manhattan_dist <- function(long1, lat1, long2, lat2) {
@@ -137,9 +137,12 @@ manhattan_dist <- function(long1, lat1, long2, lat2) {
     acos(sin(lat1) * sin(lat2) + cos(lat1) * cos(lat2) * cos(long2 - long1)) * R
   return(d) # Distance in km
 }
-distance <- manhattan_dist(start_long, start_lat, stop_long, stop_lat)
 
-age_dist_temp <- data.table(data.frame(age = age, distance = distance))
+distance <-
+  manhattan_dist(start_long, start_lat, stop_long, stop_lat)
+
+age_dist_temp <-
+  data.table(data.frame(age = age, distance = distance))
 age_dist_data <-
   age_dist_temp[, .(distance_moyenne = mean(na.omit(distance))), by = age]
 
@@ -153,9 +156,11 @@ full_plot2 <-
 
 #trip time against age
 time <-
-  m01$tripduration[which(m01$gender > 0 & m01$`birth year` > 1940)] / 60
+  m01$tripduration[which(m01$gender > 0 &
+                           m01$`birth year` > 1940)] / 60
 age_time_temp <- data.table(data.frame(age = age, time = time))
-age_time_data <- age_time_temp[, .(time = mean(na.omit(time))), by = age]
+age_time_data <-
+  age_time_temp[, .(time = mean(na.omit(time))), by = age]
 full_plot3 <-
   ggplot(age_time_data,
          aes(x = age, y = time)) +
@@ -202,7 +207,7 @@ araignee <-
     title = "Nombre d'utilisations par tranche d'âge (janvier 2018)"
   )
 
-# top 10 velos qui ont parcouru le plus de km (aout 2018)
+# top 5 des velos qui ont parcouru le plus de km (aout 2018)
 start_lat8 <-
   m08$`start station latitude`[which(m08$gender > 0 &
                                        m08$`birth year` > 1940)]
@@ -217,7 +222,8 @@ stop_long8 <-
                                       m08$`birth year` > 1940)]
 distance8 <-
   manhattan_dist(start_long8, start_lat8, stop_long8, stop_lat8)
-veloid <- m08$bikeid [which(m08$gender > 0 & m08$`birth year` > 1940)]
+veloid <-
+  m08$bikeid [which(m08$gender > 0 & m08$`birth year` > 1940)]
 top_10_temp <-
   data.table(data.frame(velo = veloid, distance = distance8))
 top_10_data <-
@@ -229,3 +235,19 @@ full_plot4 <-
   ggplot(data = top_10_data, aes(x = velo, y = distance)) + geom_histogram(stat =
                                                                              'identity') + labs(title = "Top 5 des vélos ayant parcouru la plus grande distance en janvier 2018",
                                                                                                 x = "Id du vélo", y = "Distance parcourue (Km)")
+#sexe des utilisateurs
+boys <-
+  as.integer(count(as.data.frame(m08$gender[which(m08$gender > 0 &
+                                                    m08$gender < 2)])))
+girls <-
+  as.integer(count(as.data.frame(m08$gender[which(m08$gender > 1)])))
+sexe <-
+  data.table(data.frame(
+    gender = c("hommes", "femmes"),
+    number = c(boys, girls)
+  ))
+sexe$gender = factor(sexe$gender, order = TRUE, levels = sexe$gender)
+full_plot5 <-
+  ggplot(data = sexe, aes(x = gender, y = number)) + geom_histogram(stat =
+                                                                      'identity') + labs(title = "Répartition homme/femme",
+                                                                                         x = "Genre", y = "Nombre d'utilisateurs")
